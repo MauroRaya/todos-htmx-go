@@ -55,10 +55,14 @@
 
 {{ block "todo-edit" . }}
 <div id="todo-{{ .ID }}" style="display: flex;">
-    <button>Salvar</button>
-    <button>Excluir</button>
-    <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
-    <input type="text" autocomplete="off" placeholder="{{ .Name }}">
+    <form
+        hx-put="/todos/{{ .ID }}"
+        hx-target="#todo-{{ .ID }}"
+        hx-swap="outerHTML">
+        <button type="submit">Salvar</button>
+        <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
+        <input type="text" name="Name" autocomplete="off" placeholder="{{ .Name }}">
+    </form>
 </div>
 {{ end }}
 

@@ -39,6 +39,7 @@ func main() {
 		})
 	})
 
+	//returns html for editing a todo
 	r.GET("/todos/:id/edit", func(c *gin.Context) {
 		id := c.Param("id")
 		idInt, _ := strconv.Atoi(id)
@@ -64,6 +65,24 @@ func main() {
 
 		c.HTML(200, "form", gin.H{})
 		c.HTML(200, "oob-todo", newTodo)
+	})
+
+	r.PUT("/todos/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, _ := strconv.Atoi(id)
+		name := c.PostForm("Name")
+
+		var editedTodo Todo
+
+		for i := range todos {
+			if todos[i].ID == idInt {
+				todos[i].Name = name //editing value
+				editedTodo = todos[i]
+				break
+			}
+		}
+
+		c.HTML(200, "todo", editedTodo)
 	})
 
 	r.Run(":80")
