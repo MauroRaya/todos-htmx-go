@@ -1,0 +1,70 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos</title>
+    <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <h1>New todo</h1>
+    {{ template "form" . }}
+
+    <h2>Todos</h2>
+    <div id="container-todos">
+        {{ template "todos" . }}
+    </div>
+</body>
+
+</html>
+{{ end }}
+
+
+{{ block "form" . }}
+<form hx-post="/todos">
+    <label>Name</label>
+    <input type="text" name="Name">
+    <button type="submit">Add</button>
+</form>
+{{ end }}
+
+
+{{ block "todos" . }}
+{{ range .Todos }}
+{{ template "todo" . }}
+{{ end }}
+{{ end }}
+
+
+{{ block "todo" . }}
+<div id="todo-{{ .ID }}" style="display: flex;">
+    <button
+        hx-get="/todos/{{ .ID }}/edit"
+        hx-target="#todo-{{ .ID }}"
+        hx-swap="outerHTML"
+    >Editar</button>
+    <button>Excluir</button>
+    <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
+    <label>{{ .Name }}</label>
+</div>
+{{ end }}
+
+
+{{ block "todo-edit" . }}
+<div id="todo-{{ .ID }}" style="display: flex;">
+    <button>Salvar</button>
+    <button>Excluir</button>
+    <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
+    <input type="text" autocomplete="off" placeholder="{{ .Name }}">
+</div>
+{{ end }}
+
+
+{{ block "oob-todo" . }}
+<div id="container-todos" hx-swap-oob="afterend">
+{{ template "todo" . }}
+</div>
+{{ end }}
