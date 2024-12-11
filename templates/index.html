@@ -46,7 +46,11 @@
         hx-target="#todo-{{ .ID }}"
         hx-swap="outerHTML"
     >Editar</button>
-    <button>Excluir</button>
+    <button
+        hx-delete="/todos/{{ .ID }}"
+        hx-target="#todo-{{ .ID }}"
+        hx-swap="outerHTML"
+    >Excluir</button>
     <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
     <label>{{ .Name }}</label>
 </div>

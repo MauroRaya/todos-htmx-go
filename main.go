@@ -85,5 +85,19 @@ func main() {
 		c.HTML(200, "todo", editedTodo)
 	})
 
+	r.DELETE("/todos/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, _ := strconv.Atoi(id)
+
+		for i := range todos {
+			if todos[i].ID == idInt {
+				todos = append(todos[:i], todos[i+1:]...)
+				break
+			}
+		}
+
+		c.Status(200)
+	})
+
 	r.Run(":80")
 }
