@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,15 @@ func newTodo(nextID *int, name string, isCompleted bool) Todo {
 		Name:        name,
 		IsCompleted: isCompleted,
 	}
+}
+
+func isNameInUse(name string, todos []Todo) error {
+	for i := range todos {
+		if todos[i].Name == name {
+			return fmt.Errorf("Essa tarefa já existe")
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -60,6 +70,14 @@ func main() {
 		name := c.PostForm("Name")
 
 		newTodo := newTodo(&nextID, name, false)
+		err := isNameInUse(name, todos)
+
+		if err != nil {
+			c.HTML(422, "form", gin.H{
+				"Error": err,
+			})
+			return
+		}
 
 		todos = append(todos, newTodo)
 

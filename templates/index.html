@@ -6,18 +6,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos</title>
-    <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.3"
+        integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"
+        crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .main {
+            background-color: #ffffff;
+            width: 40vh;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2 {
+            color: #333333;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            margin-top: 10px;
+        }
+
+        label,
+        input {
+            font-size: 1.1rem;
+        }
+
+        label {
+            color: #555555;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        input[type="text"] {
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            padding: 2px;
+        }
+
+        button {
+            border: none;
+            padding: 5px;
+        }
+
+        button:hover {
+            cursor: ponter;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .crud-buttons-div,
+        .save-button-div {
+            margin-top: 6px;
+            margin-bottom: 12px;
+        }
+
+        .crud-buttons {
+            width: 48%;
+        }
+
+        #save-button {
+            width: 97%;
+        }
+
+        .todo label {
+            display: inline-block;
+            width: 85%;
+            vertical-align: middle;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>New todo</h1>
-    {{ template "form" . }}
+    <div class="main">
+        <h1>New todo</h1>
+        {{ template "form" . }}
 
-    <h2>Todos</h2>
-    <div id="container-todos">
-        {{ template "todos" . }}
+        <h2>Todos</h2>
+        <div id="container-todos">
+            {{ template "todos" . }}
+        </div>
     </div>
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function (event) {
+        document.addEventListener('htmx:beforeSwap', function (evt) {
+            if (evt.detail.xhr.status === 422) {
+                evt.detail.shouldSwap = true;
+                evt.detail.isError = false;
+            }
+        })
+    })
+</script>
 
 </html>
 {{ end }}
@@ -26,8 +132,14 @@
 {{ block "form" . }}
 <form hx-post="/todos">
     <label>Name</label>
-    <input type="text" name="Name">
+    <input type="text" name="Name" autocomplete="off">
     <button type="submit">Add</button>
+
+    {{ if .Error }}
+    <div class="error">
+        {{ .Error }}
+    </div>
+    {{ end }}
 </form>
 {{ end }}
 
@@ -40,32 +152,27 @@
 
 
 {{ block "todo" . }}
-<div id="todo-{{ .ID }}" style="display: flex;">
-    <button
-        hx-get="/todos/{{ .ID }}/edit"
-        hx-target="#todo-{{ .ID }}"
-        hx-swap="outerHTML"
-    >Editar</button>
-    <button
-        hx-delete="/todos/{{ .ID }}"
-        hx-target="#todo-{{ .ID }}"
-        hx-swap="outerHTML"
-    >Excluir</button>
+<div id="todo-{{ .ID }}" class="todo">
     <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
     <label>{{ .Name }}</label>
+    <div class="crud-buttons-div">
+        <button hx-get="/todos/{{ .ID }}/edit" hx-target="#todo-{{ .ID }}" hx-swap="outerHTML"
+            class="crud-buttons">Editar</button>
+        <button hx-delete="/todos/{{ .ID }}" hx-target="#todo-{{ .ID }}" hx-swap="outerHTML"
+            class="crud-buttons">Excluir</button>
+    </div>
 </div>
 {{ end }}
 
 
 {{ block "todo-edit" . }}
-<div id="todo-{{ .ID }}" style="display: flex;">
-    <form
-        hx-put="/todos/{{ .ID }}"
-        hx-target="#todo-{{ .ID }}"
-        hx-swap="outerHTML">
-        <button type="submit">Salvar</button>
+<div id="todo-{{ .ID }}">
+    <form hx-put="/todos/{{ .ID }}" hx-target="#todo-{{ .ID }}" hx-swap="outerHTML">
         <input type="checkbox" name="IsCompleted" value="IsCompleted" {{ if .IsCompleted }} checked {{ end }}>
-        <input type="text" name="Name" autocomplete="off" placeholder="{{ .Name }}">
+        <input type="text" name="Name" autocomplete="off" value="{{ .Name }}">
+        <div class="save-button-div">
+            <button type="submit" id="save-button">Salvar</button>
+        </div>
     </form>
 </div>
 {{ end }}
@@ -73,6 +180,6 @@
 
 {{ block "oob-todo" . }}
 <div id="container-todos" hx-swap-oob="afterend">
-{{ template "todo" . }}
+    {{ template "todo" . }}
 </div>
 {{ end }}
